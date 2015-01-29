@@ -4,14 +4,17 @@
 		<?= $comment->content ?>
 	</div>
 
-	<div class="row">
-		<button>Показать все</button>
-		<button>Ответить</button>
+        
+	<div class="row" data-cont="form-cover">
+		<?php if ((count($comment->sublevel) > $this->visibleCommentsCount)): ?>
+			<button role="show-more" data-view="shortcut" data-id="<?= $comment->id ?>">Показать все</button>
+		<?php endif ?>
+		<button role="get-form" data-parent-id="<?= $comment->id ?>" data-root-id="<?= $comment->root_id ?>">Ответить</button>
 	</div>
 
 	<ul>
 		<?php
-		foreach(array_reverse($comment->sublevel(['limit'=>2])) as $sublevel) {
+		foreach(array_reverse($comment->sublevel(['limit'=>$this->visibleCommentsCount])) as $sublevel) {
 			echo $this->renderPartial('_ajaxItemSubComment', [
 		        'sublevel' => $sublevel,
 		    ]);

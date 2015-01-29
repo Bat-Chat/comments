@@ -5,6 +5,7 @@ class CommentsController extends Controller
 {
 
     public $offset = 0;
+    public $visibleCommentsCount = 2;
 
     public function actionComments() {
         $attrs = Yii::app()->request->getParam('Comments');
@@ -43,13 +44,68 @@ class CommentsController extends Controller
         ]);
     }
 
+    public function actionAddComment() {
+        $content = Yii::app()->request->getParam('content');
+        $rootId = Yii::app()->request->getParam('rootId');
+        $parentId = Yii::app()->request->getParam('parentId');
+
+        if($rootId && $parentId) {
+            $model = new Comments;
+
+            $model->content = $content;
+            $model->parent_id = $parentId;
+            $model->root_id = $rootId;
+            $model->save();
+            if($model->save()) {
+                echo 'success';
+            } else {
+                print_r($model->errors);
+            }
+        }
+    }
+    
+
     public function actionGetMore() {
         $id = Yii::app()->request->getParam('id');
-        $comment = Comments::model()->find('parent_id = :id', ['id' => $id]);
-        echo $comment->content;
+        $isShortcut = Yii::app()->request->getParam('isShortcut');
+        $isShortcut = filter_var($isShortcut, FILTER_VALIDATE_BOOLEAN);
+
+        $comments = Comments::model()->findAll('parent_id = :id', ['id' => $id]);
+        if ($isShortcut) {
+            array_splice($comments, -$this->visibleCommentsCount, $this->visibleCommentsCount);
+        }
+
+        $html = '';
+        foreach($comments as $comment) {
+            $html .= $this->renderPartial('_ajaxItemSubComment', [
+                'sublevel' => $comment,
+            ], true);
+        }
+
+        
+        echo $html;
     }
 
     public function actionAjaxComments() {
+        $attrs = Yii::app()->request->getParam('Comments');
+        if($attrs) {
+            $model = new Comments;
+
+            if(isset($_POST['ajax'])) {
+                if($_POST['ajax'] == 'comm'.$attrs['parent_id'] or $_POST['ajax'] == 'newComment') {
+                    echo CActiveForm::validate($model);
+                }
+                Yii::app()->end();
+            }
+
+            $model->attributes = $attrs;
+            $model->save();
+            if($attrs['root_id'] == 0) {
+                $model->root_id = $model->id;
+                $model->save();
+            }
+        }
+
         $page = Yii::app()->request->getParam('page');
         $page = $page ? $page : 1;
 
@@ -77,13 +133,12 @@ class CommentsController extends Controller
 
 
     public function getComments($commentsPerRage, $rootOffset = 0) {
-        $rootCount = $this->getRootCount($rootOffset);
-
         $commCount = $this->getCommentsCountByIds($this->getRootIds(1111));
         if($this->offset >= $commCount['count']) {
             return $this->getCommentsByIds($this->getRootIds(1111));
         }
 
+        $rootCount = $this->getRootCount($rootOffset);
         for ($i = 1; $i <= $rootCount['count']; $i++) {
             $rootIds = $this->getRootIds($i, $rootOffset);
 
@@ -151,6 +206,11 @@ class CommentsController extends Controller
 
     public function getCommentsCountByIds($ids) {
         $ids = implode(',', $ids);
+
+        if(!$ids) {
+            return null;
+        }
+
         return Yii::app()->db->createCommand("
             SELECT count(*) count FROM (SELECT * from comments WHERE root_id IN({$ids}) ORDER BY id ASC) c
         ")->queryRow();
@@ -158,6 +218,11 @@ class CommentsController extends Controller
 
     public function getCommentsByIds($ids) {
         $ids = implode(',', $ids);
+
+        if(!$ids) {
+            return null;
+        }
+
         return $comments = Yii::app()->db->createCommand("
             SELECT * FROM comments WHERE root_id IN({$ids})
             ORDER BY CASE WHEN parent_id = 0 THEN id END DESC, CASE WHEN parent_id > 0 THEN id END ASC
