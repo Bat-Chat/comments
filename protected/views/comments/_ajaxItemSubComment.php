@@ -1,6 +1,7 @@
 <li>
-	<?= $sublevel->content ?>
-
+	<div class="row content">
+		<?= $sublevel->content ?>
+	</div>
 
 	<div class="row">
 		<?php if ($sublevel->sublevel): ?>
@@ -57,7 +58,7 @@
 						$newComment = $formCover.next('ul').find('li').first().clone();
 						$newComment.find('[data-root-id]').attr('data-root-id', data.root_id);
 						$newComment.find('[data-parent-id]').attr('data-parent-id', data.parent_id);
-						$newComment.html(content);
+						$newComment.find('.content').html(content);
 						$formCover.next('ul').append($newComment);
 						$formCover.next('ul').find('li').first().remove();
 						$formCover.find('[data-cont="ajax-comment"]').hide();
