@@ -32,7 +32,6 @@
 	    	$butt = $(this);
 	    	$form = $('[data-cont="ajax-comment"]').clone().show();
 
-	    	console.log($form);
 	    	$butt.parent().append($form);
 
 	    	init();
@@ -49,15 +48,20 @@
 		    	var rootId = $formCover.find('[data-root-id]').attr('data-root-id');
 		    	var parentId = $formCover.find('[data-parent-id]').attr('data-parent-id');
 		    	var content = $butt.parents('form').find('[name="content"]').val();
-						// console.log(rootId);
-						// console.log(parentId);
 
 		    	$.ajax({
 					type: "POST",
 					url: "http://comments/index.php?r=comments/addComment",
 					data: { rootId: rootId, parentId: parentId, content: content },
 					success: function function_name (data) {
-						$butt.parent().append(data);
+						$newComment = $formCover.next('ul').find('li').first().clone();
+						$newComment.find('[data-root-id]').attr('data-root-id', data.root_id);
+						$newComment.find('[data-parent-id]').attr('data-parent-id', data.parent_id);
+						$newComment.html(content);
+						$formCover.next('ul').append($newComment);
+						$formCover.next('ul').find('li').first().remove();
+						$formCover.find('[data-cont="ajax-comment"]').hide();
+						console.log(data);
 					}
 				});
 

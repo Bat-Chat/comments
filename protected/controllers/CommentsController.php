@@ -57,7 +57,7 @@ class CommentsController extends Controller
             $model->root_id = $rootId;
             $model->save();
             if($model->save()) {
-                echo 'success';
+                echo json_encode($model->attributes);
             } else {
                 print_r($model->errors);
             }
