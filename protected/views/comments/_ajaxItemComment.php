@@ -1,11 +1,11 @@
 <?php $model = new Comments; ?>
 <li>
-	<div class="row">
+	<div class="row content">
 		<?= $comment->content ?>
 	</div>
 
         
-	<div class="row" data-cont="form-cover">
+	<div class="row form-cover" data-cont="form-cover">
 		<?php if ((count($comment->sublevel) > $this->visibleCommentsCount)): ?>
 			<button role="show-more" data-view="shortcut" data-id="<?= $comment->id ?>">Показать все</button>
 		<?php endif ?>

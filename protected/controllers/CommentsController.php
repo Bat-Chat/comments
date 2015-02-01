@@ -49,17 +49,21 @@ class CommentsController extends Controller
         $rootId = Yii::app()->request->getParam('rootId');
         $parentId = Yii::app()->request->getParam('parentId');
 
-        if($rootId && $parentId) {
+        if(isset($rootId) && isset($parentId)) {
             $model = new Comments;
 
             $model->content = $content;
             $model->parent_id = $parentId;
             $model->root_id = $rootId;
-            $model->save();
             if($model->save()) {
+                if($rootId == 0) {
+                    $model->root_id = $model->id;
+                    $model->save();
+                }
+
                 echo json_encode($model->attributes);
             } else {
-                print_r($model->errors);
+                echo json_encode($model->errors);
             }
         }
     }
@@ -109,7 +113,7 @@ class CommentsController extends Controller
         $page = Yii::app()->request->getParam('page');
         $page = $page ? $page : 1;
 
-        $commentsPerRage = 5;
+        $commentsPerRage = 3;
         $offset = ($page-1) * $commentsPerRage;
 
         $pagesCount = ceil($this->getRootCount()['count'] / $commentsPerRage);
