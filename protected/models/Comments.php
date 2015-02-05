@@ -28,7 +28,7 @@ class Comments extends CActiveRecord
         return array(
             array('parent_id, root_id', 'numerical', 'integerOnly'=>true),
             array('content', 'length', 'max'=>255),
-            array('content', 'required', 'except' => 'template'),
+            array('content, parent_id', 'required', 'except' => 'template'),
             // The following rule is used by search().
             // @todo Please remove those attributes that should not be searched.
             array('id, content, parent_id', 'safe', 'on'=>'search'),

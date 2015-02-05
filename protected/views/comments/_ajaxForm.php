@@ -8,6 +8,7 @@
 		<div class="row">
 			<textarea name="content" cols="20" rows="2"></textarea>
 		</div>
+		<div class="errors"></div>
 		<div class="row submit">
 			<button role="add-comment">
 				Оставить коммент
@@ -28,8 +29,8 @@
 		<ul></ul>
 	</li>
 
-	<div id="order-info">
-		<p>После перезагрузки страницы этот комментарий будет отображаться на $ странице</p>
+	<div id="order-info" data-template="order-info">
+		<p>После перезагрузки страницы этот комментарий будет отображаться на <a data-link="new-comment" href=""></a> странице</p>
 	</div>
 
 	<button data-template="toggle-section" role="toggle-section" data-view="shortcut" data-id="">Показать все</button>

@@ -61,9 +61,9 @@ class CommentsController extends Controller
                     $model->save();
                 }
 
-                echo json_encode($model->attributes);
+                echo json_encode(['success' => true, 'attrs' => $model->attributes]);
             } else {
-                echo json_encode($model->errors);
+                echo json_encode(['success' => false, 'errors' => $model->errors]);
             }
         }
     }
@@ -121,8 +121,11 @@ class CommentsController extends Controller
         $comments = $this->getRootComment($commentsPerRage, $offset);
 
         $this->render('ajaxComments', [
-            'pagesCount' => $pagesCount,
             'comments' => $comments,
+            'page' => $page,
+            'pagesCount' => $pagesCount,
+            'commentsPerRage' => $commentsPerRage,
+            'visibleCommentsCount' => $this->visibleCommentsCount,
         ]);
     }
 
