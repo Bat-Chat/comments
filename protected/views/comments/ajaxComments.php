@@ -36,6 +36,7 @@ button {
 	border-radius: 5px;
 	padding: 5px 10px;
 	font-weight: bold;
+	cursor: pointer;
 	color: #b6b6b6;
 }
 
@@ -64,12 +65,6 @@ button.show-more.closed:after {
 	border-bottom: none;
 	border-top: 8px solid #5C736D;
 }
-/*
-button.show-more.active:after {
-	top: 12px;
-	border-bottom: none;
-	border-top: 8px solid #5C736D;
-}*/
 
 .form {
 	background-color: #3d3d3d;

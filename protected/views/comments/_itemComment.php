@@ -3,13 +3,13 @@
 	<div class="row content">
 		<?= $row->content ?>
 	</div>
-	<div class="row show-form" role="show-form">
-		<button>Ответить</button>
+	<div class="row show-form">
+		<button role="show-form">Ответить</button>
 	</div>
 	<div class="form hide" data-cont="form">
 		<?php
 			$form=$this->beginWidget('CActiveForm', [
-				'id' => 'comm'.$row->id,
+				'id' => 'comment'.$row->id,
 				'enableAjaxValidation'=>true,
 				'clientOptions'=> [
 					'validateOnSubmit'=>true,

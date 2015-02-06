@@ -11,7 +11,10 @@ class CommentsController extends Controller
 	public $visibleCommentsCount = 2;
 
 	// количество отображаемых на странице комментариев
-	public $commentsPerRage = 3;
+	public $commentsPerRage = 10;
+
+	// значение обозначающее, что комментарий рутовый
+	public $rootParentId = 0;
 
 
 	/*
@@ -30,7 +33,7 @@ class CommentsController extends Controller
 		$commentsPerRage = $this->commentsPerRage;
 		$offset = ($page-1) * $commentsPerRage;
 
-		$pagesCount = ceil($this->getRootCount()['count'] / $commentsPerRage);
+		$pagesCount = ceil($this->getRootCommentsCount() / $commentsPerRage);
 
 		$rootComments = $this->getRootComment($commentsPerRage, $offset);
 
@@ -48,10 +51,11 @@ class CommentsController extends Controller
 	 */
 	public function getRootComment($limit, $offset) {
 		return Comments::model()->findAll([
-			'condition' => 'parent_id = 0',
+			'condition' => 'parent_id = :rootParentId',
 			'offset' => $offset,
 			'limit' => $limit,
-			'order' => 'id DESC'
+			'order' => 'id DESC',
+			'params' => ['rootParentId' => $this->rootParentId]
 		]);
 	}
 
@@ -120,8 +124,9 @@ class CommentsController extends Controller
 		if($attrs) {
 			$model = new Comments;
 
+			// ajax валидация
 			if(isset($_POST['ajax'])) {
-				if($_POST['ajax'] == 'comm'.$attrs['parent_id'] or $_POST['ajax'] == 'newComment') {
+				if($_POST['ajax'] == 'comment'.$attrs['parent_id'] or $_POST['ajax'] == 'newComment') {
 					echo CActiveForm::validate($model);
 				}
 				Yii::app()->end();
@@ -130,6 +135,7 @@ class CommentsController extends Controller
 			$model->attributes = $attrs;
 			$model->save();
 			if($attrs['root_id'] == 0) {
+				// если был создан рутовый коммент то назначить ему собственную группу
 				$model->root_id = $model->id;
 				$model->save();
 			}
@@ -138,12 +144,13 @@ class CommentsController extends Controller
 		$page = Yii::app()->request->getParam('page');
 		$page = $page ? $page : 1;
 
-		$commentsPerRage = 10;
+		$commentsPerRage = $this->commentsPerRage;
 		$this->offset = ($page-1) * $commentsPerRage;
 
-		$pagesCount = ceil($this->getCommentsCount()['count'] / $commentsPerRage);
+		$pagesCount = ceil($this->getAllCommentsCount() / $commentsPerRage);
 
-		$comments = $this->getComments($commentsPerRage);
+		// получить комментарии
+		$comments = $this->getComments();
 		$comments = json_decode(json_encode($comments), FALSE);
 
 		$this->render('index', [
@@ -152,69 +159,115 @@ class CommentsController extends Controller
 		]);
 	}
 
-	public function getComments($commentsPerRage, $rootOffset = 0) {
-		$commCount = $this->getCommentsCountByIds($this->getRootIds(1111));
-		if($this->offset >= $commCount['count']) {
-			return $this->getCommentsByIds($this->getRootIds(1111));
+	/*
+	 * Возвращает комментарии группами ("root_id"), т.е. не разрывая записи от общего рутового коммента
+	 * Например "commentsPerRage" равен 100
+	 * 	на первой странице:
+	 * 		если в первом рутовом комментарии 60, во втором 30, а третем 40 всех дочерних комментариев - вернет первые 2
+	 * 		если в первом рутовом комментарии 60, во втором 50 всех дочерних комментариев - вернет только первый
+	 * 		если в первом рутовом комментарии 120 всех дочерних комментариев - вернет первый
+	 */
+	public function getComments($rootGroupsOffset = 0) {
+		$commentsPerRage = $this->commentsPerRage;
+		// получить к-во всех комментов
+		$allCommentsCount = $this->getAllCommentsCount();
+		// если offset больше чем к-во комментов вывести все
+		if($this->offset >= $allCommentsCount) {
+			return $this->getAllComments();
 		}
 
-		$rootCount = $this->getRootCount($rootOffset);
-		for ($i = 1; $i <= $rootCount['count']; $i++) {
-			$rootIds = $this->getRootIds($i, $rootOffset);
+		// получить к-во рутовых комментов
+		$rootCommentsCount = $this->getRootCommentsCount($rootGroupsOffset);
+		// получить столько групп комментов, что бы их общее к-во было наиболее приближено к "commentsPerRage"
+		for ($i = 1; $i <= $rootCommentsCount; $i++) {
+			// текущий набор рутовых id
+			$rootIds = $this->getRootIds($i, $rootGroupsOffset);
 
+			// получить к-во всех комментов для текущего набора (rootIds)
 			$commentsCount = $this->getCommentsCountByIds($rootIds);
 
-			// если первая группа комментов больше чем лимит вывести ее
-			if($i == 1 && $commentsCount['count'] > $commentsPerRage) {
+			// если первая группа комментов больше чем "commentsPerRage" вывести ее
+			if($i == 1 && $commentsCount > $commentsPerRage) {
 				return $this->getCommentsByIds($rootIds);
 			}
 
-			if($this->offset > 0 && $rootOffset == 0) {
-				if($this->offset > $commentsCount['count']) {
+			// если текущая страница не первая
+			if($this->offset > 0 && $rootGroupsOffset == 0) {
+				if($this->offset > $commentsCount) {
 					continue;
-				} elseif($commentsPerRage == $commentsCount['count']) {
+				} elseif($commentsPerRage == $commentsCount) {
 					$this->offset = 0;
-					$rootOffsett = count($rootIds);
-					return $this->getComments($commentsPerRage, $rootOffsett);
+					// вернуть комментарии пропустив рутовые комментарии не пподходящие по пагинации
+					return $this->getComments(count($rootIds));
 				} else {
 					$this->offset = 0;
-					$rootOffsett = count($rootIds)-1;
-					return $this->getComments($commentsPerRage, $rootOffsett);
+					// вернуть комментарии пропустив рутовые комментарии не пподходящие по пагинации
+					// здесь "-1" потому, что к-во комментов в "rootIds" группах больше чем "commentsPerRage"
+					return $this->getComments(count($rootIds)-1);
 				}
-			} elseif($this->offset > 0 && $rootOffset > 0) {
-				print_r($commentsCount['count']);die;
 			}
 
-			if($commentsCount['count'] <= $commentsPerRage) {
-				// если к-во комментов меньше лимита но рутовых комментов больше нет вывести все
-				if($i == $rootCount['count']) {
+			if($commentsCount <= $commentsPerRage) {
+				// если к-во комментов меньше "commentsPerRage" но рутовых комментов больше нет вывести все
+				if($i == $rootCommentsCount) {
 					return $this->getCommentsByIds($rootIds);
 				}
-				// если к-во комментов меньше лимита перейти к след итерации
+
+				// если к-во комментов меньше "commentsPerRage" перейти к след итерации
 				continue;
 			} else {
+				// если к-во набранных комментов больше чем "commentsPerRage" вывести их без последней группы
 				array_pop($rootIds);
 				return $this->getCommentsByIds($rootIds);
 			}            
 		}
 	}
 
-	public function getCommentsCount() {
+	/*
+	 * Количество всех комментариев
+	 */
+	public function getAllCommentsCount() {
 		return Yii::app()->db->createCommand("
 			SELECT count(*) count FROM comments ORDER BY id
-		")->queryRow();
+		")->queryRow()['count'];
 	}
 
-	public function getRootCount($rootOffset = 0) {
-		return Yii::app()->db->createCommand("
-			SELECT count(*) count FROM (SELECT * FROM comments WHERE parent_id = 0 ORDER BY id DESC LIMIT 1111 OFFSET {$rootOffset}) rc
-		")->queryRow();
-	}
-
-	public function getRootIds($index, $rootOffset = 0) {
-		$rootIds = Yii::app()->db->createCommand("
-			SELECT id FROM comments WHERE parent_id = 0 ORDER BY id DESC LIMIT {$index} OFFSET {$rootOffset}
+	/*
+	 * Возвращает все комментарии
+	 */
+	public function getAllComments() {
+		return $comments = Yii::app()->db->createCommand("
+			SELECT * FROM comments
+			ORDER BY CASE WHEN parent_id = ".$this->rootParentId." THEN id END DESC, CASE WHEN parent_id > ".$this->rootParentId." THEN id END ASC
 		")->queryAll();
+	}
+
+	/*
+	 * Количество рутовых комментариев
+	 */
+	public function getRootCommentsCount($offset = 0) {
+		return Yii::app()->db->createCommand()
+			->select('count(*) count')
+			->from('comments')
+			->where('parent_id = :rootParentId', ['rootParentId' => $this->rootParentId])
+			->order('id DESC')
+			->limit(-1)
+			->offset($offset)
+			->queryRow()['count'];
+	}
+
+	/*
+	 * Возвращает id всех рутовых комменитариев
+	 */
+	public function getRootIds($limit = -1, $offset = 0) {
+		$rootIds = Yii::app()->db->createCommand()
+			->select('id')
+			->from('comments')
+			->where('parent_id = :rootParentId', ['rootParentId' => $this->rootParentId])
+			->order('id DESC')
+			->limit($limit)
+			->offset($offset)
+			->queryAll();
 
 		$ids = [];
 		foreach ($rootIds as $key => $value) {
@@ -224,6 +277,9 @@ class CommentsController extends Controller
 		return $ids;
 	}
 
+	/*
+	 * Возвращает к-во комментариев находящихся в "ids" группах
+	 */
 	public function getCommentsCountByIds($ids) {
 		$ids = implode(',', $ids);
 
@@ -232,10 +288,13 @@ class CommentsController extends Controller
 		}
 
 		return Yii::app()->db->createCommand("
-			SELECT count(*) count FROM (SELECT * from comments WHERE root_id IN({$ids}) ORDER BY id ASC) c
-		")->queryRow();
+			SELECT count(*) count FROM comments WHERE root_id IN({$ids}) ORDER BY id ASC
+		")->queryRow()['count'];
 	}
 
+	/*
+	 * Возвращает комментарии находящиеся в "ids" группах
+	 */
 	public function getCommentsByIds($ids) {
 		$ids = implode(',', $ids);
 
@@ -245,25 +304,32 @@ class CommentsController extends Controller
 
 		return $comments = Yii::app()->db->createCommand("
 			SELECT * FROM comments WHERE root_id IN({$ids})
-			ORDER BY CASE WHEN parent_id = 0 THEN id END DESC, CASE WHEN parent_id > 0 THEN id END ASC
+			ORDER BY CASE WHEN parent_id = ".$this->rootParentId." THEN id END DESC, CASE WHEN parent_id > ".$this->rootParentId." THEN id END ASC
 		")->queryAll();
 	}
 
+	/*
+	 * Строит дерево вложенных комментариев 
+	 */
 	public function getTree($comments, $parentId) {
 		$html = '';
 		foreach($comments as $row) {
-			if($row->parent_id == $parentId) {
-				$html .= $this->renderPartial('_itemComment', [
-					'row' => $row,
-					'comments' => $comments
-				], true);
+			if($row->parent_id != $parentId) {
+				continue;
 			}
+
+			// добавить комментарий в группу
+			$html .= $this->renderPartial('_itemComment', [
+				'row' => $row,
+				'comments' => $comments
+			], true);
 		}
 
 		if(!$html) {
 			return '';
 		}
 
+		// обертка группы комментариев
 		return $this->renderPartial('_coverComment', [
 			'html' => $html,
 		], true);

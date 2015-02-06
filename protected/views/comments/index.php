@@ -1,6 +1,6 @@
 <?php
 	if($comments) {
-		echo $this->getTree($comments, 0);
+		echo $this->getTree($comments, $this->rootParentId);
 	}
 
 	$model = new Comments;
@@ -18,7 +18,7 @@
 <script>
 	$( document ).ready(function () {
 		$('[role="show-form"]').click(function() {
-			$(this).parent().children('[data-cont="form"]').toggle();
+			$(this).parent().next('[data-cont="form"]').toggle();
 		})
 	});
 </script>
@@ -33,6 +33,7 @@ button {
 	border: 1px #000 solid;
 	border-radius: 5px;
 	font-weight: bold;
+	cursor: pointer;
 	color: #b6b6b6;
 }
 
