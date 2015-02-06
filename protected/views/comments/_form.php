@@ -1,12 +1,12 @@
 <div class="form">
 	<?php
-		$form=$this->beginWidget('CActiveForm', [
-			'id' => 'newComment',
-			'enableAjaxValidation'=>true,
-			'clientOptions'=> [
-				'validateOnSubmit'=>true,
-			],
-		]);
+	$form=$this->beginWidget('CActiveForm', [
+		'id' => 'newComment',
+		'enableAjaxValidation'=>true,
+		'clientOptions'=> [
+			'validateOnSubmit'=>true,
+		],
+	]);
 	?>
 	<div class="row">
 		<?= $form->textArea($model, 'content') ?>
@@ -15,7 +15,7 @@
 		<?= $form->hiddenField($model, 'root_id', ['value' => null]) ?>
 	</div>
 	<div class="row submit">
-		<?= CHtml::submitButton('Оставить коммент'); ?>
+		<button>Оставить коммент</button>
 	</div>
 	<?php $this->endWidget(); ?>
 </div>

@@ -1,9 +1,12 @@
 <?php $model = new Comments; ?>
 <li>
-	<div class="row">
+	<div class="row content">
 		<?= $row->content ?>
 	</div>
-	<div class="form">
+	<div class="row show-form" role="show-form">
+		<button>Ответить</button>
+	</div>
+	<div class="form hide" data-cont="form">
 		<?php
 			$form=$this->beginWidget('CActiveForm', [
 				'id' => 'comm'.$row->id,
@@ -20,7 +23,7 @@
 			<?= $form->hiddenField($model, 'root_id', ['value' => $row->root_id]) ?>
 		</div>
 		<div class="row submit">
-			<?= CHtml::submitButton('Оставить коммент'); ?>
+			<button>Оставить коммент</button>
 		</div>
 		<?php $this->endWidget(); ?>
 	</div>

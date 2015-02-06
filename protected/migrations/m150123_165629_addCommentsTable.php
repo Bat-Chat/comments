@@ -54,9 +54,9 @@ class m150123_165629_addCommentsTable extends CDbMigration
 		// }
 
 
-		$roots = [1,101,201,301,401,501,601,701,801,901];
+		$roots = [1,11,21,31,41,51,61,71,81,91,101,111,121,131,141,151,161,171,181,191];
 		$rootId = null;
-		for ($i=1; $i <= 1000; $i++) {
+		for ($i=1; $i <= 200; $i++) {
 			$parentId = $i-1;
 			if (in_array($i, $roots)) {
 				$rootId = $i;
