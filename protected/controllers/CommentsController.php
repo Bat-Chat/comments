@@ -76,6 +76,9 @@ class CommentsController extends Controller
 					$model->save();
 				}
 
+				$model->refresh();
+				$model->created_at = TimeHelper::format($model->created_at);
+
 				echo json_encode(['success' => true, 'attrs' => $model->attributes]);
 			} else {
 				echo json_encode(['success' => false, 'errors' => $model->errors]);
@@ -308,14 +311,14 @@ class CommentsController extends Controller
 	 */
 	public function getTree($comments, $parentId) {
 		$html = '';
-		foreach($comments as $row) {
-			if($row->parent_id != $parentId) {
+		foreach($comments as $comment) {
+			if($comment->parent_id != $parentId) {
 				continue;
 			}
 
 			// добавить комментарий в группу
 			$html .= $this->renderPartial('_itemComment', [
-				'row' => $row,
+				'comment' => $comment,
 				'comments' => $comments
 			], true);
 		}

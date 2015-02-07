@@ -209,3 +209,9 @@ Stack trace:
 	`parent_id` int(11) DEFAULT 0,
 	`root_id` int(11) DEFAULT 0
 ).
+2015/02/07 09:24:09 [error] [system.db.CDbCommand] CDbCommand::execute() failed: SQLSTATE[42000]: Syntax error or access violation: 1067 Invalid default value for 'root_id'. The SQL statement executed was: CREATE TABLE `comments` (
+	`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	`content` varchar(255),
+	`parent_id` int(11) DEFAULT 0,
+	`root_id` timestamp DEFAULT NULL
+).

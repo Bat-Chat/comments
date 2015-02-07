@@ -74,6 +74,12 @@ button:active {
 	border-top: 1px #3d3d3d solid;
 	margin-top: 10px;
 	padding-top: 10px;
+
+	.date {
+		top: -5px;
+		float: right;
+		position: relative;
+	}
 }
 
 #content{

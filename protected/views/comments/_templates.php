@@ -25,6 +25,7 @@
 
 		<div class="row form-cover" data-cont="form-cover">
 			<button role="get-form" data-parent-id="" data-root-id="">Ответить</button>
+			<div class="date" data-cont="date"></div>
 		</div>
 		<ul></ul>
 	</li>

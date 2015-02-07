@@ -8,6 +8,7 @@
 			<button class="show-more closed" role="show-more" data-view="shortcut" data-id="<?= $comment->id ?>">Все ответы</button>
 		<?php endif ?>
 		<button role="get-form" data-parent-id="<?= $comment->id ?>" data-root-id="<?= $comment->root_id ?>">Ответить</button>
+		<div class="date"><?= TimeHelper::format($comment->created_at) ?></div>
 	</div>
 
 	<ul>

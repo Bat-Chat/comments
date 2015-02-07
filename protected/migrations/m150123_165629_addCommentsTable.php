@@ -10,11 +10,13 @@ class m150123_165629_addCommentsTable extends CDbMigration
             'content' => 'string',
             'parent_id' => 'integer DEFAULT 0',
             'root_id' => 'integer DEFAULT 0',
+            'created_at' => 'timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP',
         ]);
 
 		$roots = [1,11,21,31,41,51,61,71,81,91,101,111,121,131,141,151,161,171,181,191];
 		$rootId = null;
 		for ($i=1; $i <= 200; $i++) {
+			sleep(1);
 			$parentId = $i-1;
 			if (in_array($i, $roots)) {
 				$rootId = $i;

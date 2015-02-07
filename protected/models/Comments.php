@@ -7,9 +7,14 @@
  * @property integer $id
  * @property string $content
  * @property integer $parent_id
+ * @property timestamp $created_at
  */
 class Comments extends CActiveRecord
 {
+
+    // свойство для хранения отформатированного created_at 
+    public $formattedDate;
+
     /**
      * @return string the associated database table name
      */
@@ -27,11 +32,11 @@ class Comments extends CActiveRecord
         // will receive user inputs.
         return array(
             array('parent_id, root_id', 'numerical', 'integerOnly'=>true),
-            array('content', 'length', 'max'=>255),
+            array('content, created_at', 'length', 'max'=>255),
             array('content, parent_id', 'required', 'except' => 'template'),
             // The following rule is used by search().
             // @todo Please remove those attributes that should not be searched.
-            array('id, content, parent_id', 'safe', 'on'=>'search'),
+            array('id, content, parent_id, created_at', 'safe', 'on'=>'search'),
         );
     }
 
@@ -56,6 +61,7 @@ class Comments extends CActiveRecord
             'id' => 'ID',
             'content' => 'Content',
             'parent_id' => 'Parent',
+            'created_at' => 'Created',
         );
     }
 
@@ -80,6 +86,7 @@ class Comments extends CActiveRecord
         $criteria->compare('id',$this->id);
         $criteria->compare('content',$this->content,true);
         $criteria->compare('parent_id',$this->parent_id);
+        $criteria->compare('created_at',$this->created_at);
 
         return new CActiveDataProvider($this, array(
             'criteria'=>$criteria,

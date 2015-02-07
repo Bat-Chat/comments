@@ -97,6 +97,12 @@ button.show-more.closed:after {
 				border-top: 1px #3d3d3d solid;
 				padding-top: 10px;
 				margin-top: 10px;
+
+				.date {
+					top: -5px;
+					float: right;
+					position: relative;
+				}
 			}
 
 			.content {

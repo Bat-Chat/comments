@@ -193,6 +193,7 @@ $( document ).ready(function() {
 		// нацепить на новый коммент значения его аттрибутов
 		$newComment.find('[data-root-id]').attr('data-root-id', data.attrs.root_id);
 		$newComment.find('[data-parent-id]').attr('data-parent-id', data.attrs.id);
+		$newComment.find('[data-cont="date"]').text(data.attrs.created_at);
 		$newComment.find('.content').html(data.attrs.content);
 
 		// очистить ошибки валидации если такие были
