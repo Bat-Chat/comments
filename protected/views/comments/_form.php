@@ -11,8 +11,8 @@
 	<div class="row">
 		<?= $form->textArea($model, 'content') ?>
 		<?= $form->error($model, 'content'); ?>
-		<?= $form->hiddenField($model, 'parent_id', ['value' => 0]) ?>
-		<?= $form->hiddenField($model, 'root_id', ['value' => null]) ?>
+		<?= $form->hiddenField($model, 'parent_id', ['value' => $this->rootParentId]) ?>
+		<?= $form->hiddenField($model, 'root_id', ['value' => $this->rootParentId]) ?>
 	</div>
 	<div class="row submit">
 		<button>Оставить коммент</button>

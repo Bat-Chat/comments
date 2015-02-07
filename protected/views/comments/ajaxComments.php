@@ -16,7 +16,7 @@ echo $this->renderPartial('_templates', [
 ?>
 
 <div id="default-form" data-cont="form-cover">
-	<div data-parent-id="0" data-root-id="0"></div>
+	<div data-parent-id="<?= $this->rootParentId ?>" data-root-id="<?= $this->rootParentId ?>"></div>
 </div>
 
 <ul class="pagination clearfix" data-comments-per-page="<?= $commentsPerRage ?>" data-visible-comments-count="<?= $visibleCommentsCount ?>">

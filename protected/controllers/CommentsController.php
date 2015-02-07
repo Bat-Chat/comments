@@ -70,7 +70,7 @@ class CommentsController extends Controller
 
 			$model->attributes = $attrs;
 			if($model->save()) {
-				if($model->root_id == 0) {
+				if($model->root_id == $this->rootParentId) {
 					// если был создан рутовый коммент то назначить ему собственную группу
 					$model->root_id = $model->id;
 					$model->save();
@@ -134,7 +134,7 @@ class CommentsController extends Controller
 
 			$model->attributes = $attrs;
 			$model->save();
-			if($attrs['root_id'] == 0) {
+			if($model->root_id == $this->rootParentId) {
 				// если был создан рутовый коммент то назначить ему собственную группу
 				$model->root_id = $model->id;
 				$model->save();
@@ -246,14 +246,9 @@ class CommentsController extends Controller
 	 * Количество рутовых комментариев
 	 */
 	public function getRootCommentsCount($offset = 0) {
-		return Yii::app()->db->createCommand()
-			->select('count(*) count')
-			->from('comments')
-			->where('parent_id = :rootParentId', ['rootParentId' => $this->rootParentId])
-			->order('id DESC')
-			->limit(-1)
-			->offset($offset)
-			->queryRow()['count'];
+		return Yii::app()->db->createCommand("
+			SELECT count(*) count FROM (SELECT * FROM comments WHERE parent_id = 0 ORDER BY id DESC LIMIT 1111 OFFSET {$offset}) count
+		")->queryRow()['count'];
 	}
 
 	/*
