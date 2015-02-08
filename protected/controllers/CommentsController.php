@@ -16,6 +16,8 @@ class CommentsController extends Controller
 	// значение обозначающее, что комментарий рутовый
 	public $rootParentId = 0;
 
+	public $defaultAction = 'description';
+
 
 	/*
 	 * Часть кода для вывода комментариев с помощбю ajax

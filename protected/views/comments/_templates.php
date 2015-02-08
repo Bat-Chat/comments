@@ -34,5 +34,5 @@
 		<p>После перезагрузки страницы этот комментарий будет отображаться на <a data-link="new-comment" href=""></a> странице</p>
 	</div>
 
-	<button data-template="toggle-section" class="show-more closed" role="toggle-section" data-view="shortcut" data-id="">Все ответы</button>
+	<button data-template="toggle-section" class="show-more closed" role="toggle-section" data-id="">Все ответы</button>
 </div>
