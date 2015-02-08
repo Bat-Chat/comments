@@ -34,7 +34,7 @@
 			'items'=>array(
 				array('label'=>'Обычный вывод', 'url'=>array('/comments/comments')),
 				array('label'=>'Вывод с помощью ajax', 'url'=>array('/comments/ajaxComments')),
-				// array('label'=>'Contact', 'url'=>array('/site/contact')),
+				array('label'=>'Описание', 'url'=>array('/comments/description')),
 				// array('label'=>'Login', 'url'=>array('/site/login'), 'visible'=>Yii::app()->user->isGuest),
 				// array('label'=>'Logout ('.Yii::app()->user->name.')', 'url'=>array('/site/logout'), 'visible'=>!Yii::app()->user->isGuest)
 			),

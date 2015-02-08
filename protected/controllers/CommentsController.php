@@ -164,11 +164,6 @@ class CommentsController extends Controller
 
 	/*
 	 * Возвращает комментарии группами ("root_id"), т.е. не разрывая записи от общего рутового коммента
-	 * Например "commentsPerRage" равен 100
-	 * 	на первой странице:
-	 * 		если в первом рутовом комментарии 60, во втором 30, а третем 40 всех дочерних комментариев - вернет первые 2
-	 * 		если в первом рутовом комментарии 60, во втором 50 всех дочерних комментариев - вернет только первый
-	 * 		если в первом рутовом комментарии 120 всех дочерних комментариев - вернет первый
 	 */
 	public function getComments($rootGroupsOffset = 0) {
 		$commentsPerRage = $this->commentsPerRage;
@@ -331,5 +326,12 @@ class CommentsController extends Controller
 		return $this->renderPartial('_coverComment', [
 			'html' => $html,
 		], true);
+	}
+
+	/*
+	 * Страница с описанием работы страниц комментариев
+	 */
+	public function actionDescription() {
+		$this->render('description');
 	}
 }
