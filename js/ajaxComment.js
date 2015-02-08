@@ -19,18 +19,19 @@ $( document ).ready(function() {
 		$('[role="show-more"]').off().click(function (e) {
 			$button = $(this);
 
-			// вернуть все или все кроме уже показанных на странице комментов
-			var isShortcut = $button.attr('data-view') == 'shortcut' ? true : false;
+			// вернуть все комментарии кроме тех которые есть на странице
+			var presentCommentsCount = $button.parent().next('ul').children('li').length;
 
 			$.ajax({
 				type: "POST",
 				url: "http://comments/index.php?r=comments/getSubComments",
-				data: { id: $button.attr('data-id'), isShortcut: isShortcut },
+				data: { id: $button.attr('data-id'), offset: presentCommentsCount },
 				success: function (data) {
 					$button.parent().next().prepend(data);
 					initShowMore();
 					initGetForm();
 
+					$button.parent().next('ul').children('li').show();
 					$button.attr('role', 'toggle-section');
 					initToggleButton();
 					initChangeArrowState();
@@ -99,7 +100,6 @@ $( document ).ready(function() {
 	 */
 	function initToggleButton() {
 		$('[role="toggle-section"]').off().click(function (e) {
-
 			if($(this).parent().next('ul').children('li').length > visibleCommentsCount) {
 				// для больше чем "visibleCommentsCount" комментов скрывать все кроме "visibleCommentsCount" последних комментов
 				$(this).parent().next('ul').children('li:lt('+(-visibleCommentsCount)+')').toggle();
@@ -107,7 +107,6 @@ $( document ).ready(function() {
 				// иначе скрывать все
 				$(this).parent().next('ul').children('li').toggle();
 			}
-
 
 			e.preventDefault();
 		});
@@ -199,23 +198,11 @@ $( document ).ready(function() {
 		// очистить ошибки валидации если такие были
 		$formCover.find('.errors').html('');
 
-		var countComments = $formCover.next('ul').children('li').length;
+		var countComments = $formCover.next('ul').children('li:visible').length;
 		// если у родителя уже было больше или равно чем "visibleCommentsCount" комментов
 		if(countComments >= visibleCommentsCount) {
-			// скрыть первый (более старый) коммент если дочерние не были развернуты 
-			// или их к-во было равно "visibleCommentsCount"
-			if($formCover.children('[role="toggle-section"]').hasClass('closed')){
-				$formCover.next('ul').children('li:visible').first().hide();
-			}
-
-			// добавить указатель, что бы в случае подгрузки дочерних комментов
-			// возвращать все кроме уже показанных дочерних комментов
-			$showMore = $formCover.children('[role="show-more"]');
-			if($showMore.length > 0) {
-				$showMore.attr('data-view', 'shortcut');
-			}
-
 			// если к-во комментов было равно "visibleCommentsCount" добавить кнопку сворачивания/разворачивания
+			$showMore = $formCover.children('[role="show-more"]');
 			$toggle = $formCover.children('[role="toggle-section"]');
 			if(countComments == visibleCommentsCount && $showMore.length == 0 && $toggle.length == 0) {
 				$toggleButt = $('[data-template="toggle-section"]').clone();
@@ -223,6 +210,13 @@ $( document ).ready(function() {
 				$formCover.prepend($toggleButt);
 
 				initToggleButton();
+				initChangeArrowState();
+			}
+
+			// скрыть первый (более старый) коммент если дочерние не были развернуты 
+			// или их к-во было равно "visibleCommentsCount"
+			if($formCover.children('.show-more').hasClass('closed')){
+				$formCover.next('ul').children('li:visible').first().hide();
 			}
 		}
 

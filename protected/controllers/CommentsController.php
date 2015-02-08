@@ -92,15 +92,15 @@ class CommentsController extends Controller
 	public function actionGetSubComments() {
 		$id = Yii::app()->request->getParam('id');
 
-		// указывает или вернуть все или все кроме уже показанных на странице комментов ($this->visibleCommentsCount)
-		$isShortcut = Yii::app()->request->getParam('isShortcut');
-		$isShortcut = filter_var($isShortcut, FILTER_VALIDATE_BOOLEAN);
+		// вернуть все кроме уже показанных на странице комментов
+		$offset = Yii::app()->request->getParam('offset');
 
-		$comments = Comments::model()->findAll('parent_id = :id', ['id' => $id]);
-		if ($isShortcut) {
-			// удалить уже показанные комментарии
-			array_splice($comments, -$this->visibleCommentsCount, $this->visibleCommentsCount);
-		}
+		$comments = Comments::model()->findAll([
+			'condition' => 'parent_id = :parentId',
+			'order' => 'id DESC',
+			'offset' => $offset,
+			'params' => ['parentId' => $id]
+		]);
 
 		// собрать отображение всех выводимых комментариев
 		$html = '';
